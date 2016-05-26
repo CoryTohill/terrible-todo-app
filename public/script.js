@@ -2,10 +2,15 @@ $(() => {
   const API_URL = "https://terrrible-todo-app.firebaseio.com/task";
 
   function addItemToTable (item, id) {
+    let disabled = "";
+    if (item.completed) {
+      disabled = "disabled";
+    }
+
     const row =`<tr data-id="${id}">
       <td>${item.task}</td>
       <td>
-        <button class="btn btn-success complete">Complete</button>
+        <button class="btn btn-success complete" ${disabled}>Complete</button>
         <button class="btn btn-danger delete">Delete</button>
       </td>
     </tr>`;
@@ -20,14 +25,15 @@ $(() => {
         addItemToTable(data[id], id);
       });
     }
-    // TODO: handle completed tasks
   });
 
   // CREATE: form submit event to POST data to firebase
-  $('form').submit(() => {
-    $.post(`${API_URL}.json`, JSON.stringify({ task: "I was posted!" }));
-    // TODO: grab the form text
+  $('.new form').submit(() => {
+    const userText = $('.userText').val();
+    $.post(`${API_URL}.json`, JSON.stringify({ task: userText, completed: false}));
     // TODO: make this not refresh page
+    addItemToTable(null, data.name);
+    // return false;
   });
 
   // DELETE: click event on delete to send DELETE to firebase
@@ -41,9 +47,26 @@ $(() => {
       row.remove();
     });
   });
+
+  // UPDATE: click event on complete to send PUT/PATCH to firebase
+  $('tbody').on("click", ".complete", (e) => {
+    const id = $(e.target).closest('tr').data('id');
+    $(e.target).prop("disabled", true);
+    $.ajax({
+      url: `${API_URL}/${id}.json`,
+      method: "PATCH",
+      data: JSON.stringify({completed: true})
+    });
+  });
+
+  firebase.initializeApp({
+    apiKey: "AIzaSyBEgZ4sdyeVhuwazXiVsZMdVgZzThFNhas",
+    authDomain: "terrrible-todo-app.firebaseapp.com",
+    databaseURL: "https://terrrible-todo-app.firebaseio.com",
+    storageBucket: "terrrible-todo-app.appspot.com",
+  });
 });
 
 // TODO:
-// UPDATE: click event on complete to send PUT/PATCH to firebase
 
 
